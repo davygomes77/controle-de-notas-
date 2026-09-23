@@ -20,6 +20,9 @@
 - [x] Adicionar o botão Nova Turma.
 - [x] Adicionar janela modal de configurações com salvar, cancelar e restaurar padrão.
 - [x] Confirmar descarte de dados antes de alterar as dimensões da turma.
+- [x] Modernizar a interface com referência visual institucional da UEMG.
+- [x] Adicionar cabeçalho, menu lateral, painel de métricas e relatório da turma.
+- [x] Destacar visualmente as situações na tabela de resultados.
 
 ## Release 1.2 - Próxima etapa
 
@@ -29,6 +32,5 @@
 
 ## Release 2.0 - Futuro
 
-- [ ] Permitir configurar a quantidade de avaliações.
 - [ ] Persistir turmas em arquivo local.
 - [ ] Criar relatórios imprimíveis.

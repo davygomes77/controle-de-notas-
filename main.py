@@ -17,6 +17,13 @@ colunas_resultado = []
 janela = None
 configuracao_frame = None
 cadastro_frame = None
+painel_principal = None
+pagina_painel = None
+pagina_resultados = None
+pagina_relatorio = None
+area_formulario = None
+area_resultados = None
+botoes_cadastro = None
 formulario_frame = None
 resultados_frame = None
 canvas_formulario = None
@@ -28,6 +35,19 @@ entrada_quantidade_avaliacoes = None
 entrada_nota_maxima = None
 entrada_media_minima = None
 tabela = None
+rotulo_pagina = None
+cartoes_valores = []
+relatorio_var = None
+botoes_navegacao = []
+
+COR_AZUL = "#064B73"
+COR_AZUL_ESCURO = "#04344F"
+COR_AZUL_CLARO = "#E8F2F7"
+COR_FUNDO = "#F4F7F9"
+COR_BORDA = "#D7E1E7"
+COR_VERDE = "#197A5A"
+COR_VERMELHO = "#B84A4A"
+COR_TEXTO = "#173042"
 
 
 def formatar_numero(valor):
@@ -43,9 +63,95 @@ def ler_numero(texto):
 
 
 def mostrar_frame(frame):
-    configuracao_frame.grid_remove()
-    cadastro_frame.grid_remove()
-    frame.grid()
+    for pagina in [configuracao_frame, pagina_painel, cadastro_frame, pagina_resultados, pagina_relatorio]:
+        if pagina is not None:
+            pagina.grid_remove()
+    frame.grid(row=0, column=0, sticky="nsew")
+
+
+def atualizar_cartoes():
+    total_aprovados = 0
+    total_reprovados = 0
+    total_medias = 0.0
+    quantidade_processada = 0
+
+    # Repetição: percorre as linhas calculadas para alimentar o painel.
+    # len() informa quantos registros existem e substitui a contagem manual.
+    for indice_aluno in range(len(alunos)):
+        # len() verifica se há uma linha de notas antes do cálculo.
+        if indice_aluno < len(notas) and len(notas[indice_aluno]) > 0:
+            soma = 0.0
+            for nota in notas[indice_aluno]:
+                soma = soma + nota
+            media = soma / quantidade_avaliacoes
+            total_medias = total_medias + media
+            quantidade_processada = quantidade_processada + 1
+            # Seleção: conta a situação individual da turma.
+            if media >= media_minima:
+                total_aprovados = total_aprovados + 1
+            else:
+                total_reprovados = total_reprovados + 1
+
+    media_geral = 0.0
+    if quantidade_processada > 0:
+        media_geral = total_medias / quantidade_processada
+
+    valores = [
+        str(quantidade_processada),
+        str(quantidade_avaliacoes),
+        formatar_numero(media_geral),
+        str(total_aprovados),
+        str(total_reprovados),
+    ]
+    for indice in range(len(cartoes_valores)):
+        cartoes_valores[indice].configure(text=valores[indice])
+
+    relatorio_var.set(
+        f"Alunos configurados: {quantidade_alunos}\n"
+        f"Avaliações por aluno: {quantidade_avaliacoes}\n"
+        f"Nota máxima: {formatar_numero(nota_maxima)}\n"
+        f"Média mínima para aprovação: {formatar_numero(media_minima)}\n\n"
+        f"Média geral: {formatar_numero(media_geral)}\n"
+        f"Aprovados: {total_aprovados}\n"
+        f"Reprovados: {total_reprovados}"
+    )
+
+
+def mostrar_pagina(nome_pagina):
+    paginas = {
+        "painel": pagina_painel,
+        "cadastro": cadastro_frame,
+        "resultados": pagina_resultados,
+        "relatorio": pagina_relatorio,
+    }
+    mostrar_frame(paginas[nome_pagina])
+    # Repetição: atualiza o estado visual da opção ativa do menu.
+    for botao, nome_botao in botoes_navegacao:
+        if nome_botao == nome_pagina:
+            botao.configure(background=COR_AZUL)
+        else:
+            botao.configure(background=COR_AZUL_ESCURO)
+
+    if nome_pagina == "painel":
+        atualizar_cartoes()
+        rotulo_pagina.configure(text="Painel Inicial")
+    elif nome_pagina == "cadastro":
+        rotulo_pagina.configure(text="Cadastro de Alunos")
+    elif nome_pagina == "resultados":
+        atualizar_cartoes()
+        rotulo_pagina.configure(text="Resultados")
+    elif nome_pagina == "relatorio":
+        atualizar_cartoes()
+        rotulo_pagina.configure(text="Relatório da Turma")
+
+
+def abrir_resultados():
+    mostrar_pagina("resultados")
+
+
+def configurar_tags_tabela():
+    tabela.tag_configure("aprovado", background="#EAF6F0", foreground="#155B43")
+    tabela.tag_configure("reprovado", background="#FCEEEE", foreground="#7E3030")
 
 
 def limpar_tabela():
@@ -405,7 +511,10 @@ def calcular_resultados():
         valores.append(formatar_numero(soma))
         valores.append(formatar_numero(media))
         valores.append(situacao)
-        tabela.insert("", tk.END, values=valores)
+        etiqueta_situacao = "aprovado"
+        if situacao == "Reprovado":
+            etiqueta_situacao = "reprovado"
+        tabela.insert("", tk.END, values=valores, tags=(etiqueta_situacao,))
 
     media_turma = total_medias / quantidade_alunos
     resumo_var.set(
@@ -416,6 +525,7 @@ def calcular_resultados():
         f"Menor média: {nome_menor_media} ({formatar_numero(menor_media)})"
     )
     status_var.set("Resultados calculados com sucesso.")
+    atualizar_cartoes()
 
 
 def configurar_tabela_resultados():
@@ -451,6 +561,7 @@ def configurar_tabela_resultados():
     for coluna in colunas_resultado:
         tabela.heading(coluna, text=titulos[coluna])
         tabela.column(coluna, width=larguras[coluna], anchor="center")
+    configurar_tags_tabela()
     tabela.grid(row=0, column=0, sticky="nsew")
     resultados_frame.columnconfigure(0, weight=1)
     resultados_frame.rowconfigure(0, weight=1)
@@ -479,163 +590,160 @@ def criar_interface():
     global resultados_frame, canvas_formulario, canvas_resultados
     global resumo_var, status_var, entrada_quantidade_alunos
     global entrada_quantidade_avaliacoes, entrada_nota_maxima, entrada_media_minima
+    global painel_principal, pagina_painel, pagina_resultados, pagina_relatorio
+    global area_formulario, area_resultados, botoes_cadastro, rotulo_pagina
+    global cartoes_valores, relatorio_var, botoes_navegacao
 
     janela = tk.Tk()
-    janela.title("Controle de Notas da Turma")
-    janela.minsize(980, 620)
+    janela.title("UEMG | Sistema de Controle de Notas")
+    janela.minsize(1050, 680)
+    janela.configure(background=COR_FUNDO)
     janela.columnconfigure(0, weight=1)
-    janela.rowconfigure(0, weight=1)
+    janela.rowconfigure(1, weight=1)
 
     estilo = ttk.Style()
-    estilo.configure("Titulo.TLabel", font=("Segoe UI", 16, "bold"))
-    estilo.configure("Resumo.TLabel", font=("Segoe UI", 10, "bold"))
-    estilo.configure("Treeview", rowheight=28)
+    estilo.theme_use("clam")
+    estilo.configure("Titulo.TLabel", background=COR_FUNDO, foreground=COR_TEXTO, font=("Segoe UI", 18, "bold"))
+    estilo.configure("Subtitulo.TLabel", background=COR_FUNDO, foreground="#5C7180", font=("Segoe UI", 10))
+    estilo.configure("Resumo.TLabel", background=COR_FUNDO, foreground=COR_TEXTO, font=("Segoe UI", 10, "bold"))
+    estilo.configure("Card.TFrame", background="white", relief="solid", borderwidth=1)
+    estilo.configure("CardTitulo.TLabel", background="white", foreground="#607886", font=("Segoe UI", 9, "bold"))
+    estilo.configure("CardValor.TLabel", background="white", foreground=COR_TEXTO, font=("Segoe UI", 22, "bold"))
+    estilo.configure("Secao.TLabelframe", background="white", foreground=COR_AZUL, bordercolor=COR_BORDA)
+    estilo.configure("Secao.TLabelframe.Label", background="white", foreground=COR_AZUL, font=("Segoe UI", 10, "bold"))
+    estilo.configure("Treeview", background="white", fieldbackground="white", foreground=COR_TEXTO, rowheight=32, font=("Segoe UI", 9))
+    estilo.configure("Treeview.Heading", background=COR_AZUL, foreground="white", font=("Segoe UI", 9, "bold"))
+    estilo.map("Treeview.Heading", background=[("active", COR_AZUL_ESCURO)])
+    estilo.configure("Acao.TButton", background=COR_AZUL, foreground="white", padding=(14, 8), font=("Segoe UI", 9, "bold"))
+    estilo.map("Acao.TButton", background=[("active", COR_AZUL_ESCURO)])
+    estilo.configure("Secundario.TButton", background="#E7EEF2", foreground=COR_TEXTO, padding=(14, 8))
 
-    principal = ttk.Frame(janela, padding=16)
-    principal.grid(row=0, column=0, sticky="nsew")
-    principal.columnconfigure(0, weight=1)
-    principal.rowconfigure(1, weight=1)
+    cabecalho = tk.Frame(janela, background=COR_AZUL, height=82)
+    cabecalho.grid(row=0, column=0, sticky="ew")
+    cabecalho.grid_propagate(False)
+    cabecalho.columnconfigure(1, weight=1)
+    tk.Label(cabecalho, text="UEMG", background=COR_AZUL, foreground="white", font=("Segoe UI", 22, "bold")).grid(row=0, column=0, rowspan=2, padx=(24, 18), pady=12)
+    tk.Label(cabecalho, text="Universidade do Estado de Minas Gerais", background=COR_AZUL, foreground="white", font=("Segoe UI", 11, "bold")).grid(row=0, column=1, sticky="sw", pady=(14, 0))
+    tk.Label(cabecalho, text="Sistema de Controle de Notas", background=COR_AZUL, foreground="#DCEBF2", font=("Segoe UI", 10)).grid(row=1, column=1, sticky="nw", pady=(2, 14))
+    tk.Button(cabecalho, text="⚙  Configurações", command=abrir_configuracoes, background=COR_AZUL_ESCURO, foreground="white", activebackground="#0A5C87", activeforeground="white", relief="flat", padx=14, pady=8, font=("Segoe UI", 9, "bold")).grid(row=0, column=2, rowspan=2, padx=24)
 
-    barra_superior = ttk.Frame(principal)
-    barra_superior.grid(row=0, column=0, sticky="ew", pady=(0, 10))
-    barra_superior.columnconfigure(0, weight=1)
-    ttk.Label(
-        barra_superior,
-        text="Controle de Notas da Turma",
-        style="Titulo.TLabel",
-    ).grid(row=0, column=0, sticky="w")
-    ttk.Button(
-        barra_superior,
-        text="⚙ Configurações",
-        command=abrir_configuracoes,
-    ).grid(row=0, column=1, sticky="e")
+    corpo = ttk.Frame(janela)
+    corpo.grid(row=1, column=0, sticky="nsew")
+    corpo.columnconfigure(1, weight=1)
+    corpo.rowconfigure(0, weight=1)
+    menu = tk.Frame(corpo, background=COR_AZUL_ESCURO, width=218)
+    menu.grid(row=0, column=0, sticky="nsew")
+    menu.grid_propagate(False)
+    tk.Label(menu, text="NAVEGAÇÃO", background=COR_AZUL_ESCURO, foreground="#AFC9D5", font=("Segoe UI", 8, "bold")).pack(anchor="w", padx=20, pady=(24, 12))
+    opcoes_menu = [("⌂  Painel Inicial", "painel"), ("✎  Cadastro de Alunos", "cadastro"), ("▤  Resultados", "resultados"), ("▥  Relatório da Turma", "relatorio")]
+    botoes_navegacao = []
+    for texto, nome in opcoes_menu:
+        botao_menu = tk.Button(menu, text=texto, command=lambda pagina=nome: mostrar_pagina(pagina), anchor="w", background=COR_AZUL_ESCURO, foreground="white", activebackground=COR_AZUL, activeforeground="white", relief="flat", bd=0, padx=20, pady=12, font=("Segoe UI", 10))
+        botao_menu.pack(fill="x")
+        botoes_navegacao.append((botao_menu, nome))
+    tk.Frame(menu, background="#315D74", height=1).pack(fill="x", padx=20, pady=24)
+    tk.Label(menu, text="UEMG • Gestão acadêmica", background=COR_AZUL_ESCURO, foreground="#AFC9D5", font=("Segoe UI", 8)).pack(anchor="w", padx=20)
 
-    configuracao_frame = ttk.Frame(principal)
-    configuracao_frame.grid(row=1, column=0, sticky="nsew")
-    configuracao_frame.columnconfigure(0, weight=1)
+    painel_principal = ttk.Frame(corpo, padding=24)
+    painel_principal.grid(row=0, column=1, sticky="nsew")
+    painel_principal.columnconfigure(0, weight=1)
+    painel_principal.rowconfigure(0, weight=1)
 
-    ttk.Label(
-        configuracao_frame,
-        text="Configuração da turma",
-        style="Titulo.TLabel",
-    ).grid(row=0, column=0, sticky="w", pady=(0, 6))
-    ttk.Label(
-        configuracao_frame,
-        text="Defina a quantidade de alunos, avaliações e a escala de notas.",
-    ).grid(row=1, column=0, sticky="w", pady=(0, 18))
+    topo_pagina = ttk.Frame(painel_principal)
+    topo_pagina.grid(row=0, column=0, sticky="ew", pady=(0, 16))
+    topo_pagina.columnconfigure(0, weight=1)
+    rotulo_pagina = ttk.Label(topo_pagina, text="Painel Inicial", style="Titulo.TLabel")
+    rotulo_pagina.grid(row=0, column=0, sticky="w")
+    ttk.Label(topo_pagina, text="Acompanhe o desempenho acadêmico da turma em um só lugar.", style="Subtitulo.TLabel").grid(row=1, column=0, sticky="w", pady=(4, 0))
 
-    quadro_configuracao = ttk.LabelFrame(
-        configuracao_frame,
-        text="Parâmetros",
-        padding=16,
-    )
-    quadro_configuracao.grid(row=2, column=0, sticky="w")
-    campos_configuracao = [
-        ("Quantidade de alunos:", "5"),
-        ("Quantidade de avaliações:", "3"),
-        ("Nota máxima:", "10"),
-        ("Média mínima para aprovação:", "6"),
-    ]
+    conteudo = ttk.Frame(painel_principal)
+    conteudo.grid(row=1, column=0, sticky="nsew")
+    conteudo.columnconfigure(0, weight=1)
+    conteudo.rowconfigure(0, weight=1)
+
+    pagina_painel = ttk.Frame(conteudo)
+    pagina_painel.grid(row=0, column=0, sticky="nsew")
+    pagina_painel.columnconfigure(0, weight=1)
+    ttk.Label(pagina_painel, text="Visão geral da turma", style="Subtitulo.TLabel").grid(row=0, column=0, sticky="w", pady=(0, 12))
+    grade_cartoes = ttk.Frame(pagina_painel)
+    grade_cartoes.grid(row=1, column=0, sticky="ew")
+    for coluna in range(5):
+        grade_cartoes.columnconfigure(coluna, weight=1)
+    dados_cartoes = [("TOTAL DE ALUNOS", COR_AZUL), ("AVALIAÇÕES", "#437E98"), ("MÉDIA GERAL", "#7A638F"), ("APROVADOS", COR_VERDE), ("REPROVADOS", COR_VERMELHO)]
+    cartoes_valores = []
+    # Repetição: cria cartões consistentes para as métricas do painel.
+    for indice, (titulo, cor) in enumerate(dados_cartoes):
+        cartao = ttk.Frame(grade_cartoes, style="Card.TFrame", padding=14)
+        cartao.grid(row=0, column=indice, sticky="nsew", padx=(0 if indice == 0 else 5, 5 if indice < 4 else 0))
+        tk.Frame(cartao, background=cor, height=4).pack(fill="x", pady=(0, 12))
+        ttk.Label(cartao, text=titulo, style="CardTitulo.TLabel").pack(anchor="w")
+        valor = ttk.Label(cartao, text="0", style="CardValor.TLabel")
+        valor.pack(anchor="w", pady=(6, 0))
+        cartoes_valores.append(valor)
+    ttk.Label(pagina_painel, text="Use o menu lateral para cadastrar alunos, calcular resultados ou consultar o relatório geral.", style="Subtitulo.TLabel").grid(row=2, column=0, sticky="w", pady=(26, 0))
+
+    configuracao_frame = ttk.Frame(conteudo)
+    configuracao_frame.grid(row=0, column=0, sticky="nsew")
+    quadro_configuracao = ttk.LabelFrame(configuracao_frame, text="Configuração inicial", padding=16, style="Secao.TLabelframe")
+    quadro_configuracao.grid(row=0, column=0, sticky="nw")
+    campos_configuracao = [("Quantidade de alunos:", "5"), ("Quantidade de avaliações:", "3"), ("Nota máxima:", "10"), ("Média mínima para aprovação:", "6")]
     entradas = []
-    # Repetição: cria os quatro campos da configuração inicial.
+    # Repetição: cria os campos iniciais com organização institucional.
     for indice, (rotulo, valor) in enumerate(campos_configuracao):
-        ttk.Label(quadro_configuracao, text=rotulo).grid(
-            row=indice, column=0, padx=8, pady=8, sticky="w"
-        )
+        ttk.Label(quadro_configuracao, text=rotulo).grid(row=indice, column=0, padx=8, pady=8, sticky="w")
         entrada = ttk.Entry(quadro_configuracao, width=18)
         entrada.insert(0, valor)
         entrada.grid(row=indice, column=1, padx=8, pady=8, sticky="w")
         entradas.append(entrada)
+    entrada_quantidade_alunos, entrada_quantidade_avaliacoes, entrada_nota_maxima, entrada_media_minima = entradas
+    ttk.Button(configuracao_frame, text="Iniciar Cadastro", style="Acao.TButton", command=iniciar_cadastro).grid(row=1, column=0, sticky="w", pady=16)
 
-    entrada_quantidade_alunos = entradas[0]
-    entrada_quantidade_avaliacoes = entradas[1]
-    entrada_nota_maxima = entradas[2]
-    entrada_media_minima = entradas[3]
-    ttk.Button(
-        configuracao_frame,
-        text="Iniciar Cadastro",
-        command=iniciar_cadastro,
-    ).grid(row=3, column=0, sticky="w", pady=16)
-
-    cadastro_frame = ttk.Frame(principal)
-    cadastro_frame.grid(row=1, column=0, sticky="nsew")
+    cadastro_frame = ttk.Frame(conteudo)
+    cadastro_frame.grid(row=0, column=0, sticky="nsew")
     cadastro_frame.columnconfigure(0, weight=1)
-    cadastro_frame.rowconfigure(1, weight=1)
-    cadastro_frame.rowconfigure(3, weight=1)
-
-    ttk.Label(
-        cadastro_frame,
-        text="Cadastro e resultados",
-        style="Titulo.TLabel",
-    ).grid(row=0, column=0, sticky="w", pady=(0, 8))
-
-    area_formulario = ttk.LabelFrame(cadastro_frame, text="Dados dos alunos", padding=10)
-    area_formulario.grid(row=1, column=0, sticky="nsew", pady=(0, 10))
+    cadastro_frame.rowconfigure(0, weight=1)
+    area_formulario = ttk.LabelFrame(cadastro_frame, text="Dados dos alunos e avaliações", padding=10, style="Secao.TLabelframe")
+    area_formulario.grid(row=0, column=0, sticky="nsew", pady=(0, 12))
     area_formulario.columnconfigure(0, weight=1)
     area_formulario.rowconfigure(0, weight=1)
-    canvas_formulario = tk.Canvas(area_formulario, highlightthickness=0)
-    barra_formulario_vertical = ttk.Scrollbar(
-        area_formulario, orient="vertical", command=canvas_formulario.yview
-    )
-    barra_formulario_horizontal = ttk.Scrollbar(
-        area_formulario, orient="horizontal", command=canvas_formulario.xview
-    )
-    canvas_formulario.configure(
-        yscrollcommand=barra_formulario_vertical.set,
-        xscrollcommand=barra_formulario_horizontal.set,
-    )
-    canvas_formulario.grid(row=0, column=0, sticky="nsew")
+    canvas_formulario = tk.Canvas(area_formulario, background="white", highlightthickness=0)
+    barra_formulario_vertical = ttk.Scrollbar(area_formulario, orient="vertical", command=canvas_formulario.yview)
     barra_formulario_vertical.grid(row=0, column=1, sticky="ns")
+    barra_formulario_horizontal = ttk.Scrollbar(area_formulario, orient="horizontal", command=canvas_formulario.xview)
     barra_formulario_horizontal.grid(row=1, column=0, sticky="ew")
+    canvas_formulario.grid(row=0, column=0, sticky="nsew")
+    canvas_formulario.configure(yscrollcommand=barra_formulario_vertical.set, xscrollcommand=barra_formulario_horizontal.set)
     formulario_frame = ttk.Frame(canvas_formulario)
     canvas_formulario.create_window((0, 0), window=formulario_frame, anchor="nw")
-    formulario_frame.bind(
-        "<Configure>",
-        lambda evento: canvas_formulario.configure(scrollregion=canvas_formulario.bbox("all")),
-    )
+    formulario_frame.bind("<Configure>", lambda evento: canvas_formulario.configure(scrollregion=canvas_formulario.bbox("all")))
+    botoes_cadastro = ttk.Frame(cadastro_frame)
+    botoes_cadastro.grid(row=1, column=0, sticky="e")
+    ttk.Button(botoes_cadastro, text="Calcular Resultados", style="Acao.TButton", command=calcular_resultados).grid(row=0, column=0, padx=(0, 8))
+    ttk.Button(botoes_cadastro, text="Limpar", style="Secundario.TButton", command=limpar_formulario).grid(row=0, column=1, padx=(0, 8))
+    ttk.Button(botoes_cadastro, text="Nova Turma", style="Secundario.TButton", command=nova_turma).grid(row=0, column=2)
 
-    botoes = ttk.Frame(cadastro_frame)
-    botoes.grid(row=2, column=0, sticky="e", pady=(0, 10))
-    ttk.Button(botoes, text="Calcular Resultados", command=calcular_resultados).grid(
-        row=0, column=0, padx=(0, 8)
-    )
-    ttk.Button(botoes, text="Limpar", command=limpar_formulario).grid(
-        row=0, column=1, padx=(0, 8)
-    )
-    ttk.Button(botoes, text="Nova Turma", command=nova_turma).grid(row=0, column=2)
+    pagina_resultados = ttk.Frame(conteudo)
+    pagina_resultados.grid(row=0, column=0, sticky="nsew")
+    pagina_resultados.columnconfigure(0, weight=1)
+    pagina_resultados.rowconfigure(0, weight=1)
+    resultados_frame = ttk.Frame(pagina_resultados)
+    resultados_frame.grid(row=0, column=0, sticky="nsew")
+    pagina_resultados.rowconfigure(1, weight=0)
+    resumo_var = tk.StringVar(value="Preencha o cadastro e clique em Calcular Resultados.")
+    ttk.Label(pagina_resultados, textvariable=resumo_var, style="Resumo.TLabel", wraplength=950).grid(row=1, column=0, sticky="w", pady=(14, 0))
 
-    area_resultados = ttk.LabelFrame(cadastro_frame, text="Resultados", padding=10)
-    area_resultados.grid(row=3, column=0, sticky="nsew", pady=(0, 10))
-    area_resultados.columnconfigure(0, weight=1)
-    area_resultados.rowconfigure(0, weight=1)
-    canvas_resultados = tk.Canvas(area_resultados, highlightthickness=0)
-    barra_resultados_horizontal = ttk.Scrollbar(
-        area_resultados, orient="horizontal", command=canvas_resultados.xview
-    )
-    canvas_resultados.configure(xscrollcommand=barra_resultados_horizontal.set)
-    canvas_resultados.grid(row=0, column=0, sticky="nsew")
-    barra_resultados_horizontal.grid(row=1, column=0, sticky="ew")
-    resultados_frame = ttk.Frame(canvas_resultados)
-    canvas_resultados.create_window((0, 0), window=resultados_frame, anchor="nw")
-    resultados_frame.bind(
-        "<Configure>",
-        lambda evento: canvas_resultados.configure(scrollregion=canvas_resultados.bbox("all")),
-    )
+    pagina_relatorio = ttk.Frame(conteudo)
+    pagina_relatorio.grid(row=0, column=0, sticky="nsew")
+    pagina_relatorio.columnconfigure(0, weight=1)
+    ttk.Label(pagina_relatorio, text="Resumo executivo", style="Subtitulo.TLabel").grid(row=0, column=0, sticky="w", pady=(0, 12))
+    relatorio_var = tk.StringVar(value="Configure a turma para iniciar.")
+    ttk.Label(pagina_relatorio, textvariable=relatorio_var, justify="left", style="Resumo.TLabel").grid(row=1, column=0, sticky="nw")
 
-    resumo_var = tk.StringVar(value="Preencha os dados e clique em Calcular Resultados.")
-    ttk.Label(
-        cadastro_frame,
-        textvariable=resumo_var,
-        style="Resumo.TLabel",
-        wraplength=950,
-    ).grid(row=4, column=0, sticky="w", pady=(0, 4))
-    status_var = tk.StringVar(value="Configure a turma para iniciar.")
-    ttk.Label(cadastro_frame, textvariable=status_var).grid(
-        row=5, column=0, sticky="w"
-    )
+    status_var = tk.StringVar(value="Configure a turma ou acesse o painel inicial.")
+    ttk.Label(painel_principal, textvariable=status_var, style="Subtitulo.TLabel").grid(row=2, column=0, sticky="w", pady=(12, 0))
 
     configurar_tabela_resultados()
-    mostrar_frame(configuracao_frame)
+    mostrar_pagina("painel")
     janela.mainloop()
 
 

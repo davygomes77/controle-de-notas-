@@ -15,6 +15,9 @@ O projeto permite configurar a quantidade de alunos e avaliações usando Python
 - Canvas e barras de rolagem acomodam formulários e resultados grandes.
 - A janela modal de configurações usa `tk.Toplevel()` e mantém valores temporários até o salvamento.
 - Alterações dimensionais confirmadas recriam formulário e tabela; dados preenchidos geram aviso antes do descarte.
+- A interface principal usa cabeçalho azul institucional, menu lateral e páginas internas procedurais.
+- A UEMG é representada por identificação textual; não há logotipo inventado ou dependência de imagem externa.
+- `ttk.Treeview` usa tags de situação para destacar aprovados e reprovados com cores suaves.
 - A solução evita classes próprias, mantendo o paradigma procedural solicitado.
 
 ## Fluxo principal
