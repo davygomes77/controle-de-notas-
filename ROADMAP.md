@@ -11,7 +11,17 @@
 - [x] Adicionar ação para limpar o formulário.
 - [x] Criar documentação do projeto.
 
-## Release 1.1 - Próxima etapa
+## Release 1.1 - Concluída
+
+- [x] Permitir configurar a quantidade de alunos e avaliações.
+- [x] Permitir configurar a nota máxima e a média mínima.
+- [x] Gerar formulário e tabela de resultados dinamicamente.
+- [x] Adicionar barras de rolagem para tabelas grandes.
+- [x] Adicionar o botão Nova Turma.
+- [x] Adicionar janela modal de configurações com salvar, cancelar e restaurar padrão.
+- [x] Confirmar descarte de dados antes de alterar as dimensões da turma.
+
+## Release 1.2 - Próxima etapa
 
 - [ ] Permitir exportar os resultados para CSV.
 - [ ] Adicionar navegação por teclado entre os campos.
