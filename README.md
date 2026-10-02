@@ -2,7 +2,7 @@
 
 Aplicação desktop em Python para configurar uma turma, registrar alunos e avaliações e acompanhar médias e situações acadêmicas.
 
-A interface usa a identidade visual da UEMG como referência, com azul institucional, áreas claras, tipografia Segoe UI e identificação textual provisória da universidade. Nenhum logotipo falso é criado.
+A interface utiliza uma identidade própria, com cabeçalho azul, áreas claras e tipografia Segoe UI, sem identificação institucional.
 
 ## Funcionalidades
 
@@ -19,8 +19,9 @@ A interface usa a identidade visual da UEMG como referência, com azul instituci
 - Botão **Configurações** para alterar os parâmetros sem fechar a janela principal.
 - Confirmação antes de descartar dados ao mudar dimensões da turma.
 - Barras de rolagem para tabelas com muitos alunos ou avaliações.
-- Cabeçalho institucional com identificação da UEMG.
-- Menu lateral para Painel Inicial, Cadastro de Alunos, Resultados, Relatório da Turma e Configurações.
+- Cabeçalho com o título Sistema de Controle de Notas e o subtítulo Plataforma de Gestão Acadêmica.
+- Menu lateral para Painel Inicial, Cadastro de Alunos, Resultados e Relatório da Turma.
+- Botão Configurações no cabeçalho.
 - Cartões com total de alunos, avaliações, média geral, aprovados e reprovados.
 - Linhas de resultados destacadas suavemente por situação acadêmica.
 - Interface nativa construída com `tkinter` e `tkinter.ttk`.

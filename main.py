@@ -360,13 +360,13 @@ def criar_formulario_dinamico():
         cabecalhos.append(f"Avaliação {indice_avaliacao + 1}")
 
     for coluna, texto in enumerate(cabecalhos):
-        ttk.Label(formulario_frame, text=texto).grid(
+        ttk.Label(formulario_frame, text=texto, style="Branco.TLabel").grid(
             row=0, column=coluna, padx=6, pady=(0, 6), sticky="w"
         )
 
     # Repetição: cria uma linha para cada aluno e suas avaliações.
     for indice_aluno in range(quantidade_alunos):
-        ttk.Label(formulario_frame, text=str(indice_aluno + 1)).grid(
+        ttk.Label(formulario_frame, text=str(indice_aluno + 1), style="Branco.TLabel").grid(
             row=indice_aluno + 1, column=0, padx=6, pady=5
         )
         campo_nome = ttk.Entry(formulario_frame, width=28)
@@ -595,7 +595,7 @@ def criar_interface():
     global cartoes_valores, relatorio_var, botoes_navegacao
 
     janela = tk.Tk()
-    janela.title("UEMG | Sistema de Controle de Notas")
+    janela.title("Sistema de Controle de Notas")
     janela.minsize(1050, 680)
     janela.configure(background=COR_FUNDO)
     janela.columnconfigure(0, weight=1)
@@ -603,12 +603,20 @@ def criar_interface():
 
     estilo = ttk.Style()
     estilo.theme_use("clam")
-    estilo.configure("Titulo.TLabel", background=COR_FUNDO, foreground=COR_TEXTO, font=("Segoe UI", 18, "bold"))
-    estilo.configure("Subtitulo.TLabel", background=COR_FUNDO, foreground="#5C7180", font=("Segoe UI", 10))
-    estilo.configure("Resumo.TLabel", background=COR_FUNDO, foreground=COR_TEXTO, font=("Segoe UI", 10, "bold"))
+    estilo.configure("TFrame", background=COR_FUNDO)
+    estilo.configure("TLabel", background=COR_FUNDO, foreground=COR_TEXTO, font=("Segoe UI", 10))
+    estilo.configure("Branco.TFrame", background="white")
+    estilo.configure("Branco.TLabel", background="white", foreground=COR_TEXTO, font=("Segoe UI", 10))
+    estilo.configure("Titulo.TLabel", background=COR_FUNDO, foreground=COR_TEXTO, font=("Segoe UI", 24, "bold"))
+    estilo.configure("Cabecalho.TLabel", background=COR_AZUL, foreground="white", font=("Segoe UI", 18, "bold"))
+    estilo.configure("CabecalhoSubtitulo.TLabel", background=COR_AZUL, foreground="#DCEBF2", font=("Segoe UI", 11))
+    estilo.configure("Subtitulo.TLabel", background=COR_FUNDO, foreground="#526A78", font=("Segoe UI", 14))
+    estilo.configure("Informativo.TLabel", background=COR_FUNDO, foreground=COR_TEXTO, font=("Segoe UI", 12))
+    estilo.configure("SecaoTitulo.TLabel", background=COR_FUNDO, foreground=COR_AZUL, font=("Segoe UI", 16, "bold"))
+    estilo.configure("Resumo.TLabel", background=COR_FUNDO, foreground=COR_TEXTO, font=("Segoe UI", 12, "bold"))
     estilo.configure("Card.TFrame", background="white", relief="solid", borderwidth=1)
-    estilo.configure("CardTitulo.TLabel", background="white", foreground="#607886", font=("Segoe UI", 9, "bold"))
-    estilo.configure("CardValor.TLabel", background="white", foreground=COR_TEXTO, font=("Segoe UI", 22, "bold"))
+    estilo.configure("CardTitulo.TLabel", background="white", foreground="#526A78", font=("Segoe UI", 12, "bold"))
+    estilo.configure("CardValor.TLabel", background="white", foreground=COR_TEXTO, font=("Segoe UI", 28, "bold"))
     estilo.configure("Secao.TLabelframe", background="white", foreground=COR_AZUL, bordercolor=COR_BORDA)
     estilo.configure("Secao.TLabelframe.Label", background="white", foreground=COR_AZUL, font=("Segoe UI", 10, "bold"))
     estilo.configure("Treeview", background="white", fieldbackground="white", foreground=COR_TEXTO, rowheight=32, font=("Segoe UI", 9))
@@ -621,11 +629,10 @@ def criar_interface():
     cabecalho = tk.Frame(janela, background=COR_AZUL, height=82)
     cabecalho.grid(row=0, column=0, sticky="ew")
     cabecalho.grid_propagate(False)
-    cabecalho.columnconfigure(1, weight=1)
-    tk.Label(cabecalho, text="UEMG", background=COR_AZUL, foreground="white", font=("Segoe UI", 22, "bold")).grid(row=0, column=0, rowspan=2, padx=(24, 18), pady=12)
-    tk.Label(cabecalho, text="Universidade do Estado de Minas Gerais", background=COR_AZUL, foreground="white", font=("Segoe UI", 11, "bold")).grid(row=0, column=1, sticky="sw", pady=(14, 0))
-    tk.Label(cabecalho, text="Sistema de Controle de Notas", background=COR_AZUL, foreground="#DCEBF2", font=("Segoe UI", 10)).grid(row=1, column=1, sticky="nw", pady=(2, 14))
-    tk.Button(cabecalho, text="⚙  Configurações", command=abrir_configuracoes, background=COR_AZUL_ESCURO, foreground="white", activebackground="#0A5C87", activeforeground="white", relief="flat", padx=14, pady=8, font=("Segoe UI", 9, "bold")).grid(row=0, column=2, rowspan=2, padx=24)
+    cabecalho.columnconfigure(0, weight=1)
+    tk.Label(cabecalho, text="Sistema de Controle de Notas", background=COR_AZUL, foreground="white", font=("Segoe UI", 18, "bold")).grid(row=0, column=0, sticky="sw", padx=24, pady=(12, 0))
+    tk.Label(cabecalho, text="Plataforma de Gestão Acadêmica", background=COR_AZUL, foreground="#DCEBF2", font=("Segoe UI", 11)).grid(row=1, column=0, sticky="nw", padx=24, pady=(2, 12))
+    tk.Button(cabecalho, text="⚙  Configurações", command=abrir_configuracoes, background=COR_AZUL_ESCURO, foreground="white", activebackground="#0A5C87", activeforeground="white", relief="flat", padx=14, pady=8, font=("Segoe UI", 9, "bold")).grid(row=0, column=1, rowspan=2, padx=24)
 
     corpo = ttk.Frame(janela)
     corpo.grid(row=1, column=0, sticky="nsew")
@@ -642,12 +649,12 @@ def criar_interface():
         botao_menu.pack(fill="x")
         botoes_navegacao.append((botao_menu, nome))
     tk.Frame(menu, background="#315D74", height=1).pack(fill="x", padx=20, pady=24)
-    tk.Label(menu, text="UEMG • Gestão acadêmica", background=COR_AZUL_ESCURO, foreground="#AFC9D5", font=("Segoe UI", 8)).pack(anchor="w", padx=20)
-
     painel_principal = ttk.Frame(corpo, padding=24)
     painel_principal.grid(row=0, column=1, sticky="nsew")
     painel_principal.columnconfigure(0, weight=1)
-    painel_principal.rowconfigure(0, weight=1)
+    painel_principal.rowconfigure(0, weight=0)
+    painel_principal.rowconfigure(1, weight=1)
+    painel_principal.rowconfigure(2, weight=0)
 
     topo_pagina = ttk.Frame(painel_principal)
     topo_pagina.grid(row=0, column=0, sticky="ew", pady=(0, 16))
@@ -664,7 +671,7 @@ def criar_interface():
     pagina_painel = ttk.Frame(conteudo)
     pagina_painel.grid(row=0, column=0, sticky="nsew")
     pagina_painel.columnconfigure(0, weight=1)
-    ttk.Label(pagina_painel, text="Visão geral da turma", style="Subtitulo.TLabel").grid(row=0, column=0, sticky="w", pady=(0, 12))
+    ttk.Label(pagina_painel, text="Visão geral da turma", style="SecaoTitulo.TLabel").grid(row=0, column=0, sticky="w", pady=(0, 12))
     grade_cartoes = ttk.Frame(pagina_painel)
     grade_cartoes.grid(row=1, column=0, sticky="ew")
     for coluna in range(5):
@@ -680,7 +687,7 @@ def criar_interface():
         valor = ttk.Label(cartao, text="0", style="CardValor.TLabel")
         valor.pack(anchor="w", pady=(6, 0))
         cartoes_valores.append(valor)
-    ttk.Label(pagina_painel, text="Use o menu lateral para cadastrar alunos, calcular resultados ou consultar o relatório geral.", style="Subtitulo.TLabel").grid(row=2, column=0, sticky="w", pady=(26, 0))
+    ttk.Label(pagina_painel, text="Use o menu lateral para cadastrar alunos, calcular resultados ou consultar o relatório geral.", style="Informativo.TLabel").grid(row=2, column=0, sticky="w", pady=(20, 0))
 
     configuracao_frame = ttk.Frame(conteudo)
     configuracao_frame.grid(row=0, column=0, sticky="nsew")
@@ -690,7 +697,7 @@ def criar_interface():
     entradas = []
     # Repetição: cria os campos iniciais com organização institucional.
     for indice, (rotulo, valor) in enumerate(campos_configuracao):
-        ttk.Label(quadro_configuracao, text=rotulo).grid(row=indice, column=0, padx=8, pady=8, sticky="w")
+        ttk.Label(quadro_configuracao, text=rotulo, style="Branco.TLabel").grid(row=indice, column=0, padx=8, pady=8, sticky="w")
         entrada = ttk.Entry(quadro_configuracao, width=18)
         entrada.insert(0, valor)
         entrada.grid(row=indice, column=1, padx=8, pady=8, sticky="w")
@@ -713,7 +720,7 @@ def criar_interface():
     barra_formulario_horizontal.grid(row=1, column=0, sticky="ew")
     canvas_formulario.grid(row=0, column=0, sticky="nsew")
     canvas_formulario.configure(yscrollcommand=barra_formulario_vertical.set, xscrollcommand=barra_formulario_horizontal.set)
-    formulario_frame = ttk.Frame(canvas_formulario)
+    formulario_frame = ttk.Frame(canvas_formulario, style="Branco.TFrame")
     canvas_formulario.create_window((0, 0), window=formulario_frame, anchor="nw")
     formulario_frame.bind("<Configure>", lambda evento: canvas_formulario.configure(scrollregion=canvas_formulario.bbox("all")))
     botoes_cadastro = ttk.Frame(cadastro_frame)
@@ -735,7 +742,7 @@ def criar_interface():
     pagina_relatorio = ttk.Frame(conteudo)
     pagina_relatorio.grid(row=0, column=0, sticky="nsew")
     pagina_relatorio.columnconfigure(0, weight=1)
-    ttk.Label(pagina_relatorio, text="Resumo executivo", style="Subtitulo.TLabel").grid(row=0, column=0, sticky="w", pady=(0, 12))
+    ttk.Label(pagina_relatorio, text="Resumo executivo", style="SecaoTitulo.TLabel").grid(row=0, column=0, sticky="w", pady=(0, 12))
     relatorio_var = tk.StringVar(value="Configure a turma para iniciar.")
     ttk.Label(pagina_relatorio, textvariable=relatorio_var, justify="left", style="Resumo.TLabel").grid(row=1, column=0, sticky="nw")
 
